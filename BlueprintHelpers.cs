@@ -44,20 +44,26 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint<TBlueprint>(name, guid, Functional.Ignore);
 
-        public static TBlueprint CreateBlueprint<TBlueprint>(BlueprintInfo<TBlueprint> bpInfo, Action<TBlueprint> init)
+        public static TBlueprint CreateBlueprint<TBlueprint>(
+            string name, Guid guid, Action<TBlueprint> init, string? displayName, string? description)
             where TBlueprint : BlueprintFeature, new()
         {
-            return CreateBlueprint<TBlueprint>(bpInfo.Name, bpInfo.Guid, bp =>
+            return CreateBlueprint<TBlueprint>(name, guid, bp =>
             {
-                if(bpInfo.DisplayName is not null)
-                    bp.SetDisplayName(bpInfo.DisplayName);
+                if (displayName is not null)
+                    bp.SetDisplayName(displayName);
 
-                if(bpInfo.Description is not null)
-                    bp.SetDescription(bpInfo.Description);
+                if (description is not null)
+                    bp.SetDescription(description);
 
                 init(bp);
             });
         }
+
+        public static TBlueprint CreateBlueprint<TBlueprint>(BlueprintInfo<TBlueprint> bpInfo, Action<TBlueprint> init)
+            where TBlueprint : BlueprintFeature, new()
+            => CreateBlueprint<TBlueprint>(
+                name: bpInfo.Name, guid: bpInfo.Guid, init: init, displayName: bpInfo.DisplayName, description: bpInfo.Description);
     }
 }
 
@@ -84,13 +90,13 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
     {
         public static void SetIcon(this BlueprintFeature feature, UnityEngine.Sprite icon) => feature.m_Icon = icon;
 
-        public static void AddComponent<TComponent>(this BlueprintFeature blueprint, TComponent component) where TComponent : BlueprintComponent
+        public static void AddComponent<TComponent>(this BlueprintFeature feat, TComponent component) where TComponent : BlueprintComponent
         {
             // Apparently components need a unique name
             if (String.IsNullOrEmpty(component.name))
-                component.name = $"{blueprint.Name}${typeof(TComponent)}${component.GetHashCode():x}";
+                component.name = $"{feat.Name}${typeof(TComponent)}${component.GetHashCode():x}";
 
-            blueprint.ComponentsArray = blueprint.ComponentsArray.Append(component).ToArray();
+            feat.ComponentsArray = feat.ComponentsArray.Append(component).ToArray();
         }
 
         public static void RemoveComponents(this BlueprintFeature feat, Func<BlueprintComponent, bool> predicate)
@@ -151,24 +157,17 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         public static void AddFeatureCallback<TDelegate>(this BlueprintFeature feature, TDelegate callback)
             where TDelegate : UnitFactComponentDelegate
             => feature.AddComponent(callback);
-
-        public static void AddFeatureCallback<TDelegate>(this BlueprintFeature feature, Action<UnitFactComponentDelegate> callback)
-            where TDelegate : Events.UnitFact.DelegateComponent, new()
-        {
-            var @delegate = new TDelegate() { Callback = callback };
-            feature.AddComponent(@delegate);
-        }
     }
 
     public static class BlueprintFeatureSelectionExtensions
     {
-        public static void AddFeature(this BlueprintFeatureSelection selection, BlueprintFeature feature)
+        public static void AddFeature(this BlueprintFeatureSelection selection, BlueprintFeature feature, bool allowDuplicates = true)
         {
             BlueprintFeatureReference[] featureRefs = selection.Features;
 
             var featureRef = feature.ToReference<BlueprintFeatureReference>();
 
-            if (selection.m_Features.Contains(featureRef) || selection.m_AllFeatures.Contains(featureRef)) return;
+            if (allowDuplicates && (selection.m_Features.Contains(featureRef) || selection.m_AllFeatures.Contains(featureRef))) return;
 
             selection.m_Features = selection.m_Features.Append(featureRef).ToArray();
 
