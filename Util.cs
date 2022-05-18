@@ -17,6 +17,11 @@ namespace Microsoftenator.Wotr.Common.Util
         public static void IgnoreRef<T1, T2>(ref T1 x, ref T2 y) { return; }
     }
     
+    public static class Extensions
+    {
+        public static string GetName<T>(this T value) where T : struct, System.Enum => Enum.GetName(typeof(T), value);
+    }
+
     public static class TTT_Utils
     {
         public static T Clone<T>(T original) where T : notnull
