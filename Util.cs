@@ -7,6 +7,7 @@ namespace Microsoftenator.Wotr.Common.Util
 {
     public static class Functional
     {
+        public static void Unit() { }
         public static void Ignore<T>(T x) { return; }
         public static void Ignore<T1, T2>(T1 x, T2 y) { return; }
 

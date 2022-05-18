@@ -84,13 +84,13 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
     {
         public static void SetIcon(this BlueprintFeature feature, UnityEngine.Sprite icon) => feature.m_Icon = icon;
 
-        public static void AddComponent<TComponent>(this BlueprintFeature feat, TComponent component) where TComponent : BlueprintComponent
+        public static void AddComponent<TComponent>(this BlueprintFeature blueprint, TComponent component) where TComponent : BlueprintComponent
         {
             // Apparently components need a unique name
             if (String.IsNullOrEmpty(component.name))
-                component.name = $"{feat.Name}${typeof(TComponent)}${component.GetHashCode():x}";
+                component.name = $"{blueprint.Name}${typeof(TComponent)}${component.GetHashCode():x}";
 
-            feat.ComponentsArray = feat.ComponentsArray.Append(component).ToArray();
+            blueprint.ComponentsArray = blueprint.ComponentsArray.Append(component).ToArray();
         }
 
         public static void RemoveComponents(this BlueprintFeature feat, Func<BlueprintComponent, bool> predicate)
@@ -151,6 +151,13 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         public static void AddFeatureCallback<TDelegate>(this BlueprintFeature feature, TDelegate callback)
             where TDelegate : UnitFactComponentDelegate
             => feature.AddComponent(callback);
+
+        public static void AddFeatureCallback<TDelegate>(this BlueprintFeature feature, Action<UnitFactComponentDelegate> callback)
+            where TDelegate : Events.UnitFact.DelegateComponent, new()
+        {
+            var @delegate = new TDelegate() { Callback = callback };
+            feature.AddComponent(@delegate);
+        }
     }
 
     public static class BlueprintFeatureSelectionExtensions

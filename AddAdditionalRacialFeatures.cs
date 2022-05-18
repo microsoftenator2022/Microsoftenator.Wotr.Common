@@ -33,24 +33,24 @@ using Kingmaker.UnitLogic.Class.LevelUp;
 using Kingmaker.UnitLogic.Class.LevelUp.Actions;
 
 using Microsoftenator.Wotr.Common.Blueprints.Extensions;
+using Microsoftenator.Wotr.Common;
 
 using System;
 using System.Linq;
 
 namespace Microsoftenator.Wotr.Common
 {
-    public class AddAdditionalRacialFeatures : UnitFactComponentDelegate
+    public class AddAdditionalRacialFeatures : Events.UnitFact.Activate
     {
         public BlueprintFeatureBaseReference[]? Features;
 
-        public override void OnActivate()
+        public AddAdditionalRacialFeatures() => Callback = _ =>
         {
             LevelUpController? controller = Kingmaker.Game.Instance?.LevelUpController;
             if (controller == null) { return; }
             if (controller.State.Mode == LevelUpState.CharBuildMode.Mythic) { return; }
             if (Owner.Descriptor.Progression.CharacterLevel > 1) { return; }
             LevelUpHelper.AddFeaturesFromProgression(controller.State, Owner, Features.Select(f => f.Get()).ToArray(), Owner.Progression.Race, 0);
-        }
-
+        };
     }
 }
