@@ -57,7 +57,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             Description = description;
         }
 
-        internal BlueprintInfo(BlueprintInfoJson bpj) : this(bpj.Guid, bpj.Name, bpj.DisplayName, bpj.Description) { }
+        //internal BlueprintInfo(BlueprintInfoJson bpj) : this(bpj.Guid, bpj.Name, bpj.DisplayName, bpj.Description) { }
 
         public BlueprintInfo<U> Cast<U>() where U : T
             => new(name: Name, guid: GuidString, displayName: DisplayName, description: Description);
