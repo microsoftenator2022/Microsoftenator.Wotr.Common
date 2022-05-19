@@ -161,13 +161,14 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 
     public static class BlueprintFeatureSelectionExtensions
     {
-        public static void AddFeature(this BlueprintFeatureSelection selection, BlueprintFeature feature, bool allowDuplicates = true)
+        public static void AddFeature(this BlueprintFeatureSelection selection, BlueprintFeature feature,
+            bool allowDuplicates = false, bool ignorePrerequisites = false)
         {
             BlueprintFeatureReference[] featureRefs = selection.Features;
 
             var featureRef = feature.ToReference<BlueprintFeatureReference>();
 
-            if (allowDuplicates && (selection.m_Features.Contains(featureRef) || selection.m_AllFeatures.Contains(featureRef))) return;
+            if (!allowDuplicates && (selection.m_Features.Contains(featureRef) || selection.m_AllFeatures.Contains(featureRef))) return;
 
             selection.m_Features = selection.m_Features.Append(featureRef).ToArray();
 
