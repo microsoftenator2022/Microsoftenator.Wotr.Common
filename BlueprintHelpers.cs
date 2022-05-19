@@ -169,6 +169,8 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
             var featureRef = feature.ToReference<BlueprintFeatureReference>();
 
             if (!allowDuplicates && (selection.m_Features.Contains(featureRef) || selection.m_AllFeatures.Contains(featureRef))) return;
+            
+            selection.IgnorePrerequisites = ignorePrerequisites;
 
             selection.m_Features = selection.m_Features.Append(featureRef).ToArray();
 
