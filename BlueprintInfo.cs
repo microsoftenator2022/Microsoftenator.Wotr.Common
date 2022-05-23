@@ -9,30 +9,30 @@ using Microsoftenator.Wotr.Common.Util;
 
 namespace Microsoftenator.Wotr.Common.Blueprints
 {
-    public class Blueprints: IEnumerable<BlueprintInfo<BlueprintScriptableObject>>
-    {
-        private class Comparer : IEqualityComparer<BlueprintInfo<BlueprintScriptableObject>>
-        {
-            public bool Equals(BlueprintInfo<BlueprintScriptableObject> x, BlueprintInfo<BlueprintScriptableObject> y)
-                => x.Guid == y.Guid;
-            public int GetHashCode(BlueprintInfo<BlueprintScriptableObject> obj)
-                => obj.Guid.GetHashCode();
-        }
+    //public class Blueprints: IEnumerable<BlueprintInfo<BlueprintScriptableObject>>
+    //{
+    //    private class Comparer : IEqualityComparer<BlueprintInfo<BlueprintScriptableObject>>
+    //    {
+    //        public bool Equals(BlueprintInfo<BlueprintScriptableObject> x, BlueprintInfo<BlueprintScriptableObject> y)
+    //            => x.Guid == y.Guid;
+    //        public int GetHashCode(BlueprintInfo<BlueprintScriptableObject> obj)
+    //            => obj.Guid.GetHashCode();
+    //    }
 
-        private readonly HashSet<BlueprintInfo<BlueprintScriptableObject>> blueprints
-            = new(new Comparer());
+    //    private readonly HashSet<BlueprintInfo<BlueprintScriptableObject>> blueprints
+    //        = new(new Comparer());
 
-        public IReadOnlyDictionary<string, BlueprintInfo<BlueprintScriptableObject>> GetBlueprintsInfo()
-            => blueprints.ToDictionary(info => info.GuidString, Functional.Id);
-        public IEnumerator<BlueprintInfo<BlueprintScriptableObject>> GetEnumerator() => ((IEnumerable<BlueprintInfo<BlueprintScriptableObject>>)blueprints).GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => ((System.Collections.IEnumerable)blueprints).GetEnumerator();
+    //    public IReadOnlyDictionary<string, BlueprintInfo<BlueprintScriptableObject>> GetBlueprintsInfo()
+    //        => blueprints.ToDictionary(info => info.GuidString, Functional.Id);
+    //    public IEnumerator<BlueprintInfo<BlueprintScriptableObject>> GetEnumerator() => ((IEnumerable<BlueprintInfo<BlueprintScriptableObject>>)blueprints).GetEnumerator();
+    //    IEnumerator IEnumerable.GetEnumerator() => ((System.Collections.IEnumerable)blueprints).GetEnumerator();
 
-        public Blueprints(IEnumerable<BlueprintInfo<BlueprintScriptableObject>> blueprints)
-        {
-            foreach(var bpi in blueprints)
-                this.blueprints.Add(bpi);
-        }
-    }
+    //    public Blueprints(IEnumerable<BlueprintInfo<BlueprintScriptableObject>> blueprints)
+    //    {
+    //        foreach(var bpi in blueprints)
+    //            this.blueprints.Add(bpi);
+    //    }
+    //}
 
     public class BlueprintInfo<T> where T : BlueprintScriptableObject
     {
@@ -42,13 +42,14 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public readonly string? DisplayName;
         public readonly string? Description;
 
+        [Obsolete]
         public BlueprintInfo(string guid, (string name, string? displayName, string? description) info)
             : this(guid, info.name, info.displayName, info.description) { }
 
-        private BlueprintInfo(string? guid, string? name, string? displayName, string? description)
+        public BlueprintInfo(string guid, string name, string? displayName, string? description)
         {
-            if (guid is null || name is null)
-                throw new NullReferenceException();
+            //if (guid is null || name is null)
+            //    throw new NullReferenceException();
 
             GuidString = guid;
             Guid = Guid.Parse(GuidString);
@@ -59,8 +60,8 @@ namespace Microsoftenator.Wotr.Common.Blueprints
 
         //internal BlueprintInfo(BlueprintInfoJson bpj) : this(bpj.Guid, bpj.Name, bpj.DisplayName, bpj.Description) { }
 
-        public BlueprintInfo<U> Cast<U>() where U : T
-            => new(name: Name, guid: GuidString, displayName: DisplayName, description: Description);
+        //public BlueprintInfo<U> Cast<U>() where U : T
+        //    => new(name: Name, guid: GuidString, displayName: DisplayName, description: Description);
         public T GetBlueprint() => ResourcesLibrary.TryGetBlueprint<T>(GuidString);
         public U? GetBlueprint<U>() where U : T => GetBlueprint() as U;
     }

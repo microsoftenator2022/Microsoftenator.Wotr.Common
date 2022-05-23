@@ -88,7 +88,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 
     public static class BlueprintFeatureExtensions
     {
-        public static void SetIcon(this BlueprintFeature feature, UnityEngine.Sprite icon) => feature.m_Icon = icon;
+        public static void SetIcon(this BlueprintFeature feature, UnityEngine.Sprite? icon) => feature.m_Icon = icon;
 
         public static void AddComponent<TComponent>(this BlueprintFeature feat, TComponent component) where TComponent : BlueprintComponent
         {
