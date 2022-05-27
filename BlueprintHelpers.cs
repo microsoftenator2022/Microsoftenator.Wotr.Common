@@ -20,11 +20,9 @@ namespace Microsoftenator.Wotr.Common.Blueprints
 {
     public static class Helpers
     {
-        public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid, Action<TBlueprint> init)
+        public static TBlueprint CreateBlueprint<TBlueprint>(string name, BlueprintGuid assetId, Action<TBlueprint> init)
             where TBlueprint : BlueprintScriptableObject, new()
         {
-            var assetId = new BlueprintGuid(guid);
-
             if(ResourcesLibrary.TryGetBlueprint<TBlueprint>(assetId) is not null) throw new ArgumentException();
 
             TBlueprint bp = new()
@@ -40,11 +38,16 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             return bp;
         }
 
+        public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid, Action<TBlueprint> init)
+            where TBlueprint : BlueprintScriptableObject, new()
+            => CreateBlueprint(name, new BlueprintGuid(guid), init);
+
         public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid)
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint<TBlueprint>(name, guid, Functional.Ignore);
 
-        public static TBlueprint CreateBlueprint<TBlueprint>(
+        [Obsolete]
+        public static TBlueprint CreateBlueprintFeature<TBlueprint>(
             string name, Guid guid, Action<TBlueprint> init, string? displayName, string? description)
             where TBlueprint : BlueprintFeature, new()
         {
@@ -60,10 +63,45 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             });
         }
 
+        [Obsolete]
         public static TBlueprint CreateBlueprint<TBlueprint>(BlueprintInfo<TBlueprint> bpInfo, Action<TBlueprint> init)
             where TBlueprint : BlueprintFeature, new()
-            => CreateBlueprint<TBlueprint>(
-                name: bpInfo.Name, guid: bpInfo.Guid, init: init, displayName: bpInfo.DisplayName, description: bpInfo.Description);
+            => CreateBlueprintFeature(name: bpInfo.Name, guid: bpInfo.Guid, init: init, displayName: bpInfo.DisplayName, description: bpInfo.Description);
+
+        public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi, Action<TBlueprint> init)
+            where TBlueprint : BlueprintScriptableObject, new()
+            => CreateBlueprint<TBlueprint>(name: bpi.Name, assetId: bpi.BlueprintGuid, init: bp => { bpi.Init(bp); init(bp); });
+
+        public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi)
+            where TBlueprint : BlueprintScriptableObject, new()
+            => CreateBlueprint(bpi, init: Functional.Ignore);
+
+        //public static TBlueprint CreateBlueprintFeature<TBlueprint>(
+        //    NewBlueprint<TBlueprint> bpi,
+        //    Action<TBlueprint> init,
+        //    LocalizedString? displayName = null,
+        //    LocalizedString? description = null)
+        //    where TBlueprint : BlueprintFeature, new()
+        //    => CreateBlueprint(bpi, init: bp =>
+        //    {
+        //        if (displayName is not null) bp.SetDisplayName(displayName);
+        //        if (description is not null) bp.SetDescription(description);
+
+        //        init(bp);
+        //    });
+
+        //public static AddFeatureIfHasFact AddFeatureIfHasFact(BlueprintUnitFactReference checkedFact, BlueprintUnitFactReference feature, Action<AddFeatureIfHasFact> init)
+        //{
+        //    var component = new AddFeatureIfHasFact()
+        //    {
+        //        m_CheckedFact = checkedFact,
+        //        m_Feature = feature
+        //    };
+
+        //    init(component);
+
+        //    return component;
+        //}
     }
 }
 
@@ -71,8 +109,14 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 {
     public static class BlueprintExtensions
     {
-        public static TBlueprint CreateCopy<TBlueprint>(this TBlueprint original, string name, Guid guid, Action<TBlueprint> init) where TBlueprint : BlueprintScriptableObject
+        public static TBlueprint Clone<TBlueprint>(
+            this TBlueprint original,
+            string name,
+            Guid guid,
+            Action<TBlueprint> init)
+            where TBlueprint : BlueprintScriptableObject
         {
+
             TBlueprint copy = TTT_Utils.Clone(original);
 
             copy.name = name;
@@ -81,6 +125,32 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
             init(copy);
 
             ResourcesLibrary.BlueprintsCache.AddCachedBlueprint(copy.AssetGuid, copy);
+
+            return copy;
+        }
+
+        public static TBlueprint Clone<TBlueprint>(
+            this TBlueprint original,
+            string name,
+            string guid,
+            Action<TBlueprint> init)
+            where TBlueprint : BlueprintScriptableObject
+            => original.Clone(name, Guid.Parse(guid), init);
+
+        public static TBlueprint Clone<TBlueprint>(
+            this TBlueprint original,
+            NewBlueprint<TBlueprint> data,
+            Action<TBlueprint> init)
+            where TBlueprint : BlueprintScriptableObject, new()
+            => original.Clone(data.Name, data.Guid, init);
+
+        public static TBlueprint CloneFeature<TBlueprint>(
+            this TBlueprint original,
+            NewBlueprint<TBlueprint> bpi,
+            Action<TBlueprint> init)
+            where TBlueprint : BlueprintFeature, new()
+        {
+            var copy = original.Clone(bpi.Name, bpi.Guid, init: bp => { bpi.Init(bp); init(bp); });
 
             return copy;
         }
@@ -163,18 +233,20 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
     {
         public static void AddFeature(this BlueprintFeatureSelection selection, BlueprintFeature feature,
             bool allowDuplicates = false, bool ignorePrerequisites = false)
+            => AddFeature(selection, feature.ToReference<BlueprintFeatureReference>(), allowDuplicates, ignorePrerequisites);
+
+        public static void AddFeature(this BlueprintFeatureSelection selection, BlueprintFeatureReference feature,
+            bool allowDuplicates = false, bool ignorePrerequisites = false)
         {
             BlueprintFeatureReference[] featureRefs = selection.Features;
 
-            var featureRef = feature.ToReference<BlueprintFeatureReference>();
-
-            if (!allowDuplicates && (selection.m_Features.Contains(featureRef) || selection.m_AllFeatures.Contains(featureRef))) return;
+            if (!allowDuplicates && (selection.m_Features.Contains(feature) || selection.m_AllFeatures.Contains(feature))) return;
             
             selection.IgnorePrerequisites = ignorePrerequisites;
 
-            selection.m_Features = selection.m_Features.Append(featureRef).ToArray();
+            selection.m_Features = selection.m_Features.Append(feature).ToArray();
 
-            selection.m_AllFeatures = selection.m_AllFeatures.Append(featureRef).ToArray();
+            selection.m_AllFeatures = selection.m_AllFeatures.Append(feature).ToArray();
         }
 
         public static void SetFeatures(this BlueprintFeatureSelection selection, BlueprintFeatureReference[] features, BlueprintFeatureReference[]? allFeatures = null)
@@ -218,35 +290,51 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedString displayName)
             => bp.m_DisplayName = displayName;
 
+#if DEBUG
+        [Obsolete]
+#endif
         public static void SetDisplayName(this BlueprintUnitFact bp, string text)
             => bp.SetDisplayName(LocalizationHelpers.DefineString($"{bp.name}.Name", text));
+
+        public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedStringsPack strings, string text)
+            => bp.SetDisplayName(strings.Add($"{bp.name}.Name", text));
+
+        public static LocalizedString GetDisplayName(this BlueprintUnitFact bp) => bp.m_DisplayName;
 
         public static void SetDescription(this BlueprintUnitFact bp, LocalizedString description)
             => bp.m_Description = description;
 
+#if DEBUG
+        [Obsolete]
+#endif
         public static void SetDescription(this BlueprintUnitFact bp, string text)
             => bp.SetDescription(LocalizationHelpers.DefineString($"{bp.Name}", text));
+
+        public static void SetDescription(this BlueprintUnitFact bp, LocalizedStringsPack strings, string text)
+            => bp.SetDescription(strings.Add($"{bp.name}.Name", text));
+
+        public static LocalizedString GetDescription(this BlueprintUnitFact bp) => bp.m_Description;
     }
 
-    public static class ContextRankConfigExtensions
-    {
-        public static ContextRankConfig CreateContextRankConfigFeatureList(BlueprintFeatureReference[] feats)
-            => new()
-            {
-                m_BaseValueType = ContextRankBaseValueType.FeatureList,
-                m_FeatureList = feats,
-            };
+    //public static class ContextRankConfigExtensions
+    //{
+    //    public static ContextRankConfig CreateContextRankConfigFeatureList(BlueprintFeatureReference[] feats)
+    //        => new()
+    //        {
+    //            m_BaseValueType = ContextRankBaseValueType.FeatureList,
+    //            m_FeatureList = feats,
+    //        };
 
-        public static ContextRankConfig.CustomProgressionItem CreateProgressionItem(int baseValue, int progressionValue)
-            => new() { BaseValue = baseValue, ProgressionValue = progressionValue };
+    //    public static ContextRankConfig.CustomProgressionItem CreateProgressionItem(int baseValue, int progressionValue)
+    //        => new() { BaseValue = baseValue, ProgressionValue = progressionValue };
 
-        public static RecalculateOnFactsChange CreateRofcComponent(BlueprintUnitFactReference[] checkedFacts)
-            => new() { m_CheckedFacts = checkedFacts };
-        public static void SetCustomProgression(this ContextRankConfig crc,
-            ContextRankConfig.CustomProgressionItem[] progressionItems)
-        {
-            crc.m_Progression = ContextRankProgression.Custom;
-            crc.m_CustomProgression = progressionItems;
-        }
-    }
+    //    public static RecalculateOnFactsChange CreateRofcComponent(BlueprintUnitFactReference[] checkedFacts)
+    //        => new() { m_CheckedFacts = checkedFacts };
+    //    public static void SetCustomProgression(this ContextRankConfig crc,
+    //        ContextRankConfig.CustomProgressionItem[] progressionItems)
+    //    {
+    //        crc.m_Progression = ContextRankProgression.Custom;
+    //        crc.m_CustomProgression = progressionItems;
+    //    }
+    //}
 }

@@ -19,24 +19,12 @@
 //LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //SOFTWARE.
-
-using HarmonyLib;
-
-using Kingmaker.Blueprints;
-using Kingmaker.Blueprints.Classes;
-using Kingmaker.Blueprints.Classes.Selection;
-using Kingmaker.Blueprints.JsonSystem;
-using Kingmaker.UI.Common;
-using Kingmaker.UI.MVVM._VM.CharGen.Phases.FeatureSelector;
-using Kingmaker.UnitLogic;
-using Kingmaker.UnitLogic.Class.LevelUp;
-using Kingmaker.UnitLogic.Class.LevelUp.Actions;
-
-using Microsoftenator.Wotr.Common.Blueprints.Extensions;
-using Microsoftenator.Wotr.Common;
-
 using System;
 using System.Linq;
+
+using Kingmaker.Blueprints;
+using Kingmaker.UnitLogic.Class.LevelUp;
+using Kingmaker.UnitLogic.Class.LevelUp.Actions;
 
 namespace Microsoftenator.Wotr.Common
 {
