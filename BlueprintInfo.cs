@@ -51,13 +51,13 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public string GuidString { get; private set; }
         internal Guid Guid => Guid.Parse(GuidString);
         public BlueprintGuid BlueprintGuid => new(Guid);
-        internal TRef GetBlueprintRefInternal<TRef, T>()
-            where T : BlueprintScriptableObject
-            where TRef : BlueprintReference<T>, new()
-            => new() { deserializedGuid = BlueprintGuid };
+        //internal TRef GetBlueprintRefInternal<TRef, T>()
+        //    where T : BlueprintScriptableObject
+        //    where TRef : BlueprintReference<T>, new()
+        //    => new() { guid = GuidString };
 
         internal T? TryGetBlueprintInternal<T>() where T : BlueprintScriptableObject
-            => new BlueprintReference<T>() { deserializedGuid = BlueprintGuid }.Get();
+            => ResourcesLibrary.TryGetBlueprint<T>(BlueprintGuid);
 
         public abstract string Name { get; }
         public abstract Type BlueprintType { get; }
@@ -72,63 +72,132 @@ namespace Microsoftenator.Wotr.Common.Blueprints
     {
         internal BlueprintInfoAbstract(string guidString) : base(guidString) { }
 
-        public virtual TRef GetBlueprintRef<TRef>() where TRef : BlueprintReference<T>, new()
-            => GetBlueprintRefInternal<TRef, T>();
+        //public virtual TRef GetBlueprintRef<TRef>() where TRef : BlueprintReference<T>, new()
+        //    => GetBlueprintRefInternal<TRef, T>();
 
-        public BlueprintReference<T> GetBlueprintRef() => GetBlueprintRefInternal<BlueprintReference<T>, T>();
+        //public BlueprintReference<T> GetBlueprintRef() => GetBlueprintRefInternal<BlueprintReference<T>, T>();
 
         public virtual T? TryGetBlueprint() => TryGetBlueprintInternal<T>();
+        public virtual T GetBlueprint() => TryGetBlueprint() ?? throw new NullReferenceException();
 
         //public abstract BlueprintInfoAbstract<U> As<U>() where U : T;
 
         //public override Type BlueprintType => typeof(T);
     }
 
-    public sealed class NewBlueprint<T> : BlueprintInfoAbstract<T> where T : BlueprintScriptableObject, new()
+    public class NewBlueprint<T> : BlueprintInfoAbstract<T> where T : BlueprintScriptableObject, new()
     {
+        
+
+        //private Func<LocalizedString?> getDisplayName = () => null;
+        //public LocalizedString? DisplayName { get; set; }
+
+        //private Func<LocalizedString?> getDescription = () => null;
+        //public LocalizedString? Description { get; set; }
+
+        //internal void InitDefaults(T bp)
+        //{
+        //    if (bp is BlueprintUnitFact fact)
+        //    {
+        //        DisplayName = getDisplayName();
+        //        Description = getDescription();
+
+        //        if (DisplayName is not null) fact.SetDisplayName(DisplayName);
+        //        if (Description is not null) fact.SetDescription(Description);
+        //    }
+        //}
+
+        //private Action<T> init = Functional.Ignore;
+        public virtual Action<T> Init { get; set; }
+
+        public NewBlueprint(string guid, string name) : base(guid)
+        {
+            this.name = name;
+            Init = Functional.Ignore;
+        }
+
         private readonly string name;
         public override string Name => name;
 
+        //public T GetBlueprint() => base.TryGetBlueprintInternal<T>() ?? throw new NullReferenceException();
+
+        private readonly Type blueprintType = typeof(T);
+        public override Type BlueprintType => blueprintType;
+
+        //public NewBlueprint(
+        //    string guid,
+        //    string name,
+        //    LocalizedStringsPack strings,
+        //    string? displayName = null,
+        //    string? description = null)
+        //    : this(guid, name)
+        //{
+        //    //if(displayName is not null)
+        //    //{
+        //    //    var key = $"{name}.Name";
+        //    //    strings.Add(key, displayName);
+        //    //    getDisplayName = () => strings.Get(key);
+        //    //}
+
+        //    //if(description is not null) 
+        //    //{
+        //    //    var key = $"{name}.Description";
+        //    //    strings.Add(key, description);
+        //    //    getDescription = () => strings.Get(key);
+        //    //}
+        //}
+    }
+
+    public class NewUnitFact<T> : NewBlueprint<T>
+            where T : BlueprintUnitFact, new()
+    {
+        private readonly Func<LocalizedString?> getDisplayName = () => null;
         public LocalizedString? DisplayName { get; set; }
+
+        private readonly Func<LocalizedString?> getDescription = () => null;
         public LocalizedString? Description { get; set; }
 
-        private void InitFact(T bp)
+        internal void InitDefaults(T bp)
         {
             if (bp is BlueprintUnitFact fact)
             {
+                DisplayName = getDisplayName();
+                Description = getDescription();
+
                 if (DisplayName is not null) fact.SetDisplayName(DisplayName);
                 if (Description is not null) fact.SetDescription(Description);
             }
         }
-
-        private Action<T> init;
-        public Action<T> Init
+        
+        public override Action<T> Init
         {
-            get => init;
-            set => init = bp => { InitFact(bp); init(bp); };
-        }
-        public NewBlueprint(string guid, string name) : base(guid)
-        {
-            this.name = name;
-            this.init = InitFact;
+            get => bp => { InitDefaults(bp); base.Init(bp); };
+            set => base.Init = value;
         }
 
-        public NewBlueprint(
+        public NewUnitFact(string guid, string name) : base(guid, name) { }
+
+        public NewUnitFact(
             string guid,
             string name,
             LocalizedStringsPack strings,
             string? displayName = null,
-            string? description = null)
-            : this(guid, name)
+            string? description = null) : base(guid, name)
         {
-            if (displayName is not null) DisplayName = strings.Add($"{name}.Name", displayName);
-            if (description is not null) Description = strings.Add($"{name}.Description", description);
+            if (displayName is not null)
+            {
+                var key = $"{name}.Name";
+                strings.Add(key, displayName);
+                getDisplayName = () => strings.Get(key);
+            }
+
+            if (description is not null)
+            {
+                var key = $"{name}.Description";
+                strings.Add(key, description);
+                getDescription = () => strings.Get(key);
+            }
         }
-
-        public T GetBlueprint() => base.TryGetBlueprintInternal<T>() ?? throw new NullReferenceException();
-
-        private readonly Type blueprintType = typeof(T);
-        public override Type BlueprintType => blueprintType;
     }
 
     public sealed class OwlcatBlueprint<T> : BlueprintInfoAbstract<T> where T : BlueprintScriptableObject
@@ -136,7 +205,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public OwlcatBlueprint(string guid) : base(guid) { }
         public override string Name => base.TryGetBlueprintInternal<T>()?.name ?? throw new NullReferenceException();
 
-        public T GetBlueprint() => base.TryGetBlueprintInternal<T>() ?? throw new NullReferenceException();
+        //public T GetBlueprint() => base.TryGetBlueprintInternal<T>() ?? throw new NullReferenceException();
 
         private readonly Type blueprintType = typeof(T);
         public override Type BlueprintType => blueprintType;
@@ -144,26 +213,26 @@ namespace Microsoftenator.Wotr.Common.Blueprints
 
     public static class BlueprintInfoExtensions
     {
-        public static TRef GetBlueprintRef<T, U, TRef>(this NewBlueprint<T> obj)
-            where T : U, new()
-            where U : BlueprintScriptableObject, new()
-            where TRef : BlueprintReference<U>, new()
-            => obj.GetBlueprintRefInternal<TRef, U>();
+        //public static TRef GetBlueprintRef<T, U, TRef>(this NewBlueprint<T> obj)
+        //    where T : U, new()
+        //    where U : BlueprintScriptableObject, new()
+        //    where TRef : BlueprintReference<U>, new()
+        //    => obj.GetBlueprintRefInternal<TRef, U>();
 
-        public static TRef GetBlueprintRef<T, U, TRef>(this OwlcatBlueprint<T> obj)
-            where T : U
-            where U : BlueprintScriptableObject
-            where TRef : BlueprintReference<U>, new()
-            => obj.GetBlueprintRefInternal<TRef, U>();
+        //public static TRef GetBlueprintRef<T, U, TRef>(this OwlcatBlueprint<T> obj)
+        //    where T : U
+        //    where U : BlueprintScriptableObject
+        //    where TRef : BlueprintReference<U>, new()
+        //    => obj.GetBlueprintRefInternal<TRef, U>();
 
-        public static U GetBlueprint<T, U>(this NewBlueprint<T> obj)
+        public static U? GetBlueprint<T, U>(this NewBlueprint<T> obj)
             where T : U, new()
             where U : BlueprintScriptableObject, new()
             => obj.GetBlueprint();
 
-        public static U? TryGetBlueprint<T, U>(this OwlcatBlueprint<T> obj)
+        public static U? GetBlueprint<T, U>(this OwlcatBlueprint<T> obj)
             where T : U
             where U : BlueprintScriptableObject
-            => obj.TryGetBlueprintInternal<T>();
+            => obj.GetBlueprint();
     }
 }

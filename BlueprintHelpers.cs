@@ -46,27 +46,27 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint<TBlueprint>(name, guid, Functional.Ignore);
 
-        [Obsolete]
-        public static TBlueprint CreateBlueprintFeature<TBlueprint>(
-            string name, Guid guid, Action<TBlueprint> init, string? displayName, string? description)
-            where TBlueprint : BlueprintFeature, new()
-        {
-            return CreateBlueprint<TBlueprint>(name, guid, bp =>
-            {
-                if (displayName is not null)
-                    bp.SetDisplayName(displayName);
+        //[Obsolete]
+        //public static TBlueprint CreateBlueprintFeature<TBlueprint>(
+        //    string name, Guid guid, Action<TBlueprint> init, string? displayName, string? description)
+        //    where TBlueprint : BlueprintFeature, new()
+        //{
+        //    return CreateBlueprint<TBlueprint>(name, guid, bp =>
+        //    {
+        //        if (displayName is not null)
+        //            bp.SetDisplayName(displayName);
 
-                if (description is not null)
-                    bp.SetDescription(description);
+        //        if (description is not null)
+        //            bp.SetDescription(description);
 
-                init(bp);
-            });
-        }
+        //        init(bp);
+        //    });
+        //}
 
-        [Obsolete]
-        public static TBlueprint CreateBlueprint<TBlueprint>(BlueprintInfo<TBlueprint> bpInfo, Action<TBlueprint> init)
-            where TBlueprint : BlueprintFeature, new()
-            => CreateBlueprintFeature(name: bpInfo.Name, guid: bpInfo.Guid, init: init, displayName: bpInfo.DisplayName, description: bpInfo.Description);
+        //[Obsolete]
+        //public static TBlueprint CreateBlueprint<TBlueprint>(BlueprintInfo<TBlueprint> bpInfo, Action<TBlueprint> init)
+        //    where TBlueprint : BlueprintFeature, new()
+        //    => CreateBlueprintFeature(name: bpInfo.Name, guid: bpInfo.Guid, init: init, displayName: bpInfo.DisplayName, description: bpInfo.Description);
 
         public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi, Action<TBlueprint> init)
             where TBlueprint : BlueprintScriptableObject, new()
@@ -150,7 +150,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
             Action<TBlueprint> init)
             where TBlueprint : BlueprintFeature, new()
         {
-            var copy = original.Clone(bpi.Name, bpi.Guid, init: bp => { bpi.Init(bp); init(bp); });
+            var copy = original.Clone(bpi.Name, bpi.Guid, bp => { bpi.Init(bp); init(bp); } );
 
             return copy;
         }
@@ -287,31 +287,39 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 
     public static class BlueprintUnitFactExtensions
     {
-        public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedString displayName)
+        public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedString? displayName)
             => bp.m_DisplayName = displayName;
 
-#if DEBUG
-        [Obsolete]
-#endif
-        public static void SetDisplayName(this BlueprintUnitFact bp, string text)
-            => bp.SetDisplayName(LocalizationHelpers.DefineString($"{bp.name}.Name", text));
+//#if DEBUG
+//        [Obsolete]
+//#endif
+//        public static void SetDisplayName(this BlueprintUnitFact bp, string text)
+//            => bp.SetDisplayName(LocalizationHelpers.DefineString($"{bp.name}.Name", text));
 
         public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedStringsPack strings, string text)
-            => bp.SetDisplayName(strings.Add($"{bp.name}.Name", text));
+        {
+            var key = $"{bp.name}.Name";
+            strings.Add(key, text);
+            bp.SetDisplayName(strings.Get(key));
+        }
 
         public static LocalizedString GetDisplayName(this BlueprintUnitFact bp) => bp.m_DisplayName;
 
-        public static void SetDescription(this BlueprintUnitFact bp, LocalizedString description)
+        public static void SetDescription(this BlueprintUnitFact bp, LocalizedString? description)
             => bp.m_Description = description;
 
-#if DEBUG
-        [Obsolete]
-#endif
-        public static void SetDescription(this BlueprintUnitFact bp, string text)
-            => bp.SetDescription(LocalizationHelpers.DefineString($"{bp.Name}", text));
+        //#if DEBUG
+        //        [Obsolete]
+        //#endif
+        //        public static void SetDescription(this BlueprintUnitFact bp, string text)
+        //            => bp.SetDescription(LocalizationHelpers.DefineString($"{bp.Name}", text));
 
         public static void SetDescription(this BlueprintUnitFact bp, LocalizedStringsPack strings, string text)
-            => bp.SetDescription(strings.Add($"{bp.name}.Name", text));
+        {
+            var key = $"{bp.name}.Description";
+            strings.Add(key, text);
+            bp.SetDescription(strings.Get(key));
+        }
 
         public static LocalizedString GetDescription(this BlueprintUnitFact bp) => bp.m_Description;
     }
