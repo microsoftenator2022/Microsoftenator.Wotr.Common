@@ -14,39 +14,39 @@ using Microsoftenator.Wotr.Common.Util;
 
 namespace Microsoftenator.Wotr.Common.Blueprints
 {
-    [Obsolete]
-    public class BlueprintInfo<T> where T : BlueprintScriptableObject
-    {
-        public readonly string GuidString;
-        public readonly Guid Guid;
-        public readonly string Name;
-        public readonly string? DisplayName;
-        public readonly string? Description;
+    //[Obsolete]
+    //public class BlueprintInfo<T> where T : BlueprintScriptableObject
+    //{
+    //    public readonly string GuidString;
+    //    public readonly Guid Guid;
+    //    public readonly string Name;
+    //    public readonly string? DisplayName;
+    //    public readonly string? Description;
 
-        public BlueprintInfo(string guid, (string name, string? displayName, string? description) info)
-            : this(guid, info.name, info.displayName, info.description) { }
+    //    public BlueprintInfo(string guid, (string name, string? displayName, string? description) info)
+    //        : this(guid, info.name, info.displayName, info.description) { }
 
-        public BlueprintInfo(string guid, string name, string? displayName, string? description)
-        {
-            //if (guid is null || name is null)
-            //    throw new NullReferenceException();
+    //    public BlueprintInfo(string guid, string name, string? displayName, string? description)
+    //    {
+    //        //if (guid is null || name is null)
+    //        //    throw new NullReferenceException();
 
-            GuidString = guid;
-            Guid = Guid.Parse(GuidString);
-            Name = name;
-            DisplayName = displayName;
-            Description = description;
-        }
+    //        GuidString = guid;
+    //        Guid = Guid.Parse(GuidString);
+    //        Name = name;
+    //        DisplayName = displayName;
+    //        Description = description;
+    //    }
 
-        //internal BlueprintInfo(BlueprintInfoJson bpj) : this(bpj.Guid, bpj.Name, bpj.DisplayName, bpj.Description) { }
+    //    //internal BlueprintInfo(BlueprintInfoJson bpj) : this(bpj.Guid, bpj.Name, bpj.DisplayName, bpj.Description) { }
 
-        //public BlueprintInfo<U> Cast<U>() where U : T
-        //    => new(name: Name, guid: GuidString, displayName: DisplayName, description: Description);
-        public T GetBlueprint() => ResourcesLibrary.TryGetBlueprint<T>(GuidString);
-        public U? GetBlueprint<U>() where U : T => GetBlueprint() as U;
-    }
+    //    //public BlueprintInfo<U> Cast<U>() where U : T
+    //    //    => new(name: Name, guid: GuidString, displayName: DisplayName, description: Description);
+    //    public T GetBlueprint() => ResourcesLibrary.TryGetBlueprint<T>(GuidString);
+    //    public U? GetBlueprint<U>() where U : T => GetBlueprint() as U;
+    //}
 
-    public abstract class BlueprintInfoAbstract
+    public abstract class BlueprintInfo
     {
         public string GuidString { get; private set; }
         internal Guid Guid => Guid.Parse(GuidString);
@@ -62,13 +62,13 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public abstract string Name { get; }
         public abstract Type BlueprintType { get; }
 
-        internal BlueprintInfoAbstract(string guidString)
+        internal BlueprintInfo(string guidString)
         {
             GuidString = guidString;
         }
     }
 
-    public abstract class BlueprintInfoAbstract<T> : BlueprintInfoAbstract where T : BlueprintScriptableObject
+    public abstract class BlueprintInfoAbstract<T> : BlueprintInfo where T : BlueprintScriptableObject
     {
         internal BlueprintInfoAbstract(string guidString) : base(guidString) { }
 
