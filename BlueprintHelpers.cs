@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using MoreLinq;
+
 using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes;
 using Kingmaker.Blueprints.Classes.Prerequisites;
@@ -46,28 +48,6 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint<TBlueprint>(name, guid, Functional.Ignore);
 
-        //[Obsolete]
-        //public static TBlueprint CreateBlueprintFeature<TBlueprint>(
-        //    string name, Guid guid, Action<TBlueprint> init, string? displayName, string? description)
-        //    where TBlueprint : BlueprintFeature, new()
-        //{
-        //    return CreateBlueprint<TBlueprint>(name, guid, bp =>
-        //    {
-        //        if (displayName is not null)
-        //            bp.SetDisplayName(displayName);
-
-        //        if (description is not null)
-        //            bp.SetDescription(description);
-
-        //        init(bp);
-        //    });
-        //}
-
-        //[Obsolete]
-        //public static TBlueprint CreateBlueprint<TBlueprint>(BlueprintInfo<TBlueprint> bpInfo, Action<TBlueprint> init)
-        //    where TBlueprint : BlueprintFeature, new()
-        //    => CreateBlueprintFeature(name: bpInfo.Name, guid: bpInfo.Guid, init: init, displayName: bpInfo.DisplayName, description: bpInfo.Description);
-
         public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi, Action<TBlueprint> init)
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint<TBlueprint>(name: bpi.Name, assetId: bpi.BlueprintGuid, init: bp => { bpi.Init(bp); init(bp); });
@@ -75,20 +55,6 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi)
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint(bpi, init: Functional.Ignore);
-
-        //public static TBlueprint CreateBlueprintFeature<TBlueprint>(
-        //    NewBlueprint<TBlueprint> bpi,
-        //    Action<TBlueprint> init,
-        //    LocalizedString? displayName = null,
-        //    LocalizedString? description = null)
-        //    where TBlueprint : BlueprintFeature, new()
-        //    => CreateBlueprint(bpi, init: bp =>
-        //    {
-        //        if (displayName is not null) bp.SetDisplayName(displayName);
-        //        if (description is not null) bp.SetDescription(description);
-
-        //        init(bp);
-        //    });
 
         //public static AddFeatureIfHasFact AddFeatureIfHasFact(BlueprintUnitFactReference checkedFact, BlueprintUnitFactReference feature, Action<AddFeatureIfHasFact> init)
         //{
@@ -227,6 +193,15 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         public static void AddFeatureCallback<TDelegate>(this BlueprintFeature feature, TDelegate callback)
             where TDelegate : UnitFactComponentDelegate
             => feature.AddComponent(callback);
+        
+        public static void AddClass(this BlueprintProgression progression, BlueprintCharacterClass c, int additionalLevel = 0)
+        {
+            progression.m_Classes = progression.m_Classes.Append(new ()
+            {
+                m_Class = c.ToReference<BlueprintCharacterClassReference>(),
+                AdditionalLevel = additionalLevel
+            }).ToArray();
+        }
     }
 
     public static class BlueprintFeatureSelectionExtensions
@@ -238,7 +213,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         public static void AddFeature(this BlueprintFeatureSelection selection, BlueprintFeatureReference feature,
             bool allowDuplicates = false, bool ignorePrerequisites = false)
         {
-            BlueprintFeatureReference[] featureRefs = selection.Features;
+            //BlueprintFeatureReference[] featureRefs = selection.Features;
 
             if (!allowDuplicates && (selection.m_Features.Contains(feature) || selection.m_AllFeatures.Contains(feature))) return;
             
@@ -290,12 +265,6 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedString? displayName)
             => bp.m_DisplayName = displayName;
 
-//#if DEBUG
-//        [Obsolete]
-//#endif
-//        public static void SetDisplayName(this BlueprintUnitFact bp, string text)
-//            => bp.SetDisplayName(LocalizationHelpers.DefineString($"{bp.name}.Name", text));
-
         public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedStringsPack strings, string text)
         {
             var key = $"{bp.name}.Name";
@@ -307,12 +276,6 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 
         public static void SetDescription(this BlueprintUnitFact bp, LocalizedString? description)
             => bp.m_Description = description;
-
-        //#if DEBUG
-        //        [Obsolete]
-        //#endif
-        //        public static void SetDescription(this BlueprintUnitFact bp, string text)
-        //            => bp.SetDescription(LocalizationHelpers.DefineString($"{bp.Name}", text));
 
         public static void SetDescription(this BlueprintUnitFact bp, LocalizedStringsPack strings, string text)
         {

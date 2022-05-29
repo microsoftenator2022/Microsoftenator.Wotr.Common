@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net462</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
@@ -70,6 +71,8 @@
       <PrivateAssets>none</PrivateAssets>
       <IncludeAssets>build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="morelinq" Version="3.3.2" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
   <Target Name="Publicize" AfterTargets="Clean;Restore">
