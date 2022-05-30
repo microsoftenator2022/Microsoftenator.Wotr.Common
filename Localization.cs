@@ -34,7 +34,7 @@ namespace Microsoftenator.Wotr.Common.Localization
                 if(!Strings.ContainsKey(key))
                     return null;
 
-                LoadAll();
+                LoadNew();
             }
 
             return LocalizationHelpers.LocalizedString(key);
@@ -44,7 +44,9 @@ namespace Microsoftenator.Wotr.Common.Localization
         {
             var newStrings = Strings.Where(s => !LoadedStrings.Contains(s)).ToDictionary();
 
-            ToLocalizationPack(Locale, newStrings);
+            LocalizationManager.CurrentPack.AddStrings(ToLocalizationPack(Locale, newStrings));
+
+            LoadedStrings = Strings;
         }
 
         public void LoadAll()
