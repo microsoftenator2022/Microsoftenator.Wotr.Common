@@ -34,11 +34,7 @@ namespace Microsoftenator.Wotr.Common.Localization
                 if(!Strings.ContainsKey(key))
                     return null;
 
-                LoadNew();
-
-                #if DEBUG
                 LoadAll();
-                #endif
             }
 
             return LocalizationHelpers.LocalizedString(key);
