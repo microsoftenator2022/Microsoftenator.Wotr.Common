@@ -30,11 +30,14 @@ namespace Microsoftenator.Wotr.Common.Util
 
             return partialApply;
         }
-    }
 
+        public static class Enumerable
+        {
+            public static IEnumerable<T> Singleton<T>(T value) { yield return value; }
+        }
+    }
     public static class EnumerableExtensions
     {
-        public static IEnumerable<T> Singleton<T>(T value) { yield return value; }
         public static T Head<T>(this IEnumerable<T> s) => s.First();
         public static IEnumerable<T> Tail<T>(this IEnumerable<T> s) => s.Skip(1);
         public static (T head, IEnumerable<T> tail) Deconstruct<T>(this IEnumerable<T> s) => (s.Head(), s.Tail());
