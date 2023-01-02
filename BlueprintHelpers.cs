@@ -22,6 +22,14 @@ namespace Microsoftenator.Wotr.Common.Blueprints
 {
     public static class Helpers
     {
+        public static class Unchecked
+        {
+            public static TRef CreateBlueprintRef<TRef, T>(BlueprintGuid guid)
+                where T : BlueprintScriptableObject
+                where TRef : BlueprintReference<T>, new()
+                => new() { deserializedGuid = guid };
+        }
+
         public static TBlueprint CreateBlueprint<TBlueprint>(string name, BlueprintGuid assetId, Action<TBlueprint> init)
             where TBlueprint : BlueprintScriptableObject, new()
         {
