@@ -134,18 +134,13 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
     {
         public static void SetIcon(this BlueprintFeature feature, UnityEngine.Sprite? icon) => feature.m_Icon = icon;
 
-        public static void AddComponent<TComponent>(this BlueprintFeature feat, TComponent component) where TComponent : BlueprintComponent
-        {
-            // Apparently components need a unique name
-            if (String.IsNullOrEmpty(component.name))
-                component.name = $"{feat.Name}${typeof(TComponent)}${component.GetHashCode():x}";
-
-            feat.ComponentsArray = feat.ComponentsArray.Append(component).ToArray();
-        }
+        public static void AddComponent<TComponent>(this BlueprintFeature feat, TComponent component)
+            where TComponent : BlueprintComponent => ((BlueprintUnitFact)feat).AddComponent(component);
 
         public static void RemoveComponents(this BlueprintFeature feat, Func<BlueprintComponent, bool> predicate)
-            => feat.ComponentsArray = feat.ComponentsArray.Where(c => !predicate(c)).ToArray();
-
+            //=> feat.ComponentsArray = feat.ComponentsArray.Where(c => !predicate(c)).ToArray();
+            => ((BlueprintUnitFact)feat).RemoveComponents(predicate);
+        
         public static void AddPrerequisite<TPrerequisite>(this BlueprintFeature feat, Action<TPrerequisite> init,
             Prerequisite.GroupType group = Prerequisite.GroupType.All)
             where TPrerequisite : Prerequisite, new()
@@ -161,7 +156,10 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         }
 
         public static void RemoveFeatureOnApply(this BlueprintFeature feat, BlueprintFeature blueprintToRemove)
-            => feat.AddComponent(new RemoveFeatureOnApply() { m_Feature = blueprintToRemove.ToReference<BlueprintUnitFactReference>() });
+            => feat.AddComponent(new RemoveFeatureOnApply()
+            {
+                m_Feature = blueprintToRemove.ToReference<BlueprintUnitFactReference>() 
+            });
 
         public static void AddPrerequisiteFeature(this BlueprintFeature feat,
             BlueprintFeature prerequisiteFeature, Action<PrerequisiteFeature> init,
@@ -270,6 +268,18 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 
     public static class BlueprintUnitFactExtensions
     {
+        public static void AddComponent<TComponent>(this BlueprintUnitFact fact, TComponent component) where TComponent : BlueprintComponent
+        {
+            // Apparently components need a unique name
+            if (String.IsNullOrEmpty(component.name))
+                component.name = $"{fact.Name}${typeof(TComponent)}${component.GetHashCode():x}";
+
+            fact.ComponentsArray = fact.ComponentsArray.Append(component).ToArray();
+        }
+
+        public static void RemoveComponents(this BlueprintUnitFact fact, Func<BlueprintComponent, bool> predicate)
+            => fact.ComponentsArray = fact.ComponentsArray.Where(c => !predicate(c)).ToArray();
+
         public static void SetDisplayName(this BlueprintUnitFact bp, LocalizedString? displayName)
             => bp.m_DisplayName = displayName;
 
