@@ -30,8 +30,11 @@ namespace Microsoftenator.Wotr.Common.ModTemplate
             MaybeLogger<string>(mapped);
 
         public virtual Action<string> Debug =>
+#if DEBUG
             MaybeLogger(log => s => log.Log($"[DEBUG] {s}"));
-
+#else
+            Functional.Ignore;
+#endif
 
         public virtual Action<string> Info => MaybeLogger(log => log.Log);
         public virtual Action<string> Warning => MaybeLogger(log => log.Warning);

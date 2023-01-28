@@ -128,6 +128,15 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 
             return copy;
         }
+
+        public static void AddComponent<TComponent>(this BlueprintScriptableObject blueprint, TComponent component) where TComponent : BlueprintComponent
+        {
+            // Apparently components need a unique name
+            if (String.IsNullOrEmpty(component.name))
+                component.name = $"${typeof(TComponent)}${component.GetHashCode():x}";
+
+            blueprint.ComponentsArray = blueprint.ComponentsArray.Append(component).ToArray();
+        }
     }
 
     public static class BlueprintFeatureExtensions
@@ -303,6 +312,23 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         }
 
         public static LocalizedString GetDescription(this BlueprintUnitFact bp) => bp.m_Description;
+    }
+
+    public static class BlueprintCharacterClassExtensions
+    {
+        public static void AddPrerequisite<TPrerequisite>(this BlueprintCharacterClass feat, Action<TPrerequisite> init,
+            Prerequisite.GroupType group = Prerequisite.GroupType.All)
+            where TPrerequisite : Prerequisite, new()
+        {
+            TPrerequisite p = new()
+            {
+                Group = group
+            };
+
+            init(p);
+
+            feat.AddComponent(p);
+        }
     }
 
     //public static class ContextRankConfigExtensions
