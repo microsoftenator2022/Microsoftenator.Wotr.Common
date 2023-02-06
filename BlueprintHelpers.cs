@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using MoreLinq;
+//using MoreLinq;
 
 using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes;
@@ -119,6 +119,15 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
             var copy = original.Clone(bpi.Name, bpi.Guid, bp => { bpi.Init(bp); init(bp); } );
 
             return copy;
+        }
+
+        public static void AddComponent<TComponent>(this BlueprintScriptableObject blueprint, TComponent component) where TComponent : BlueprintComponent
+        {
+            // Apparently components need a unique name
+            if (String.IsNullOrEmpty(component.name))
+                component.name = $"${typeof(TComponent)}${component.GetHashCode():x}";
+
+            blueprint.ComponentsArray = blueprint.ComponentsArray.Append(component).ToArray();
         }
     }
 
@@ -295,6 +304,23 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         }
 
         public static LocalizedString GetDescription(this BlueprintUnitFact bp) => bp.m_Description;
+    }
+
+    public static class BlueprintCharacterClassExtensions
+    {
+        public static void AddPrerequisite<TPrerequisite>(this BlueprintCharacterClass feat, Action<TPrerequisite> init,
+            Prerequisite.GroupType group = Prerequisite.GroupType.All)
+            where TPrerequisite : Prerequisite, new()
+        {
+            TPrerequisite p = new()
+            {
+                Group = group
+            };
+
+            init(p);
+
+            feat.AddComponent(p);
+        }
     }
 
     //public static class ContextRankConfigExtensions
