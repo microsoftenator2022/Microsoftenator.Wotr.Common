@@ -15,8 +15,8 @@ namespace Microsoftenator.Wotr.Common.ModTemplate
     {
         protected UnityModManager.ModEntry? modEntry;
 
-        private Action<UnityModManager.ModEntry> onGUI = Functional.Ignore;
-        private Action<UnityModManager.ModEntry> onSaveGUI = Functional.Ignore;
+        //private Action<UnityModManager.ModEntry> onGUI = Functional.Ignore;
+        //private Action<UnityModManager.ModEntry> onSaveGUI = Functional.Ignore;
         private Func<UnityModManager.ModEntry, bool> onUnload = (_) => true;
 
         public virtual UnityModManager.ModEntry ModEntry
@@ -28,16 +28,16 @@ namespace Microsoftenator.Wotr.Common.ModTemplate
 
                 modEntry.OnUnload = this.onUnload;
                 modEntry.OnToggle = this.OnToggle;
-                modEntry.OnGUI = this.OnGUI;
-                modEntry.OnSaveGUI = this.OnSaveGUI;
+                //modEntry.OnGUI = this.OnGUI;
+                //modEntry.OnSaveGUI = this.OnSaveGUI;
             }
         }
 
-        public virtual Logger Log { get; protected set; } = Logger.Null;
+        public virtual Logger Log { get; protected set; } = new();
 
         public virtual bool OnLoad(UnityModManager.ModEntry modEntry, Harmony? harmony = null, bool harmonyPatch = false)
         {
-            Log = Log == Logger.Null ? new(modEntry.Logger) : Log;
+            Log.ModLogger = modEntry.Logger;
 
             Log.Debug($"{nameof(ModBase)}.{nameof(OnLoad)}");
 
@@ -50,10 +50,10 @@ namespace Microsoftenator.Wotr.Common.ModTemplate
             {
                 Harmony ??= new Harmony(ModEntry.Info.Id);
 
-                //var onUnload = this.onUnload;
+                var onUnload = this.onUnload;
                 OnUnload = (me) =>
                 {
-                    Harmony?.UnpatchAll();
+                    Harmony?.UnpatchAll(ModEntry.Info.Id);
 
                     return onUnload(me) && true;
                 };
@@ -80,29 +80,29 @@ namespace Microsoftenator.Wotr.Common.ModTemplate
 
         public virtual Harmony? Harmony { get; set; }
 
-        public virtual Action<UnityModManager.ModEntry> OnGUI
-        {
-            get => onGUI;
-            set
-            {
-                onGUI = value;
+        //public virtual Action<UnityModManager.ModEntry> OnGUI
+        //{
+        //    get => onGUI;
+        //    set
+        //    {
+        //        onGUI = value;
 
-                if (modEntry is not null)
-                    modEntry.OnGUI = onGUI;
-            }
-        }
+        //        if (modEntry is not null)
+        //            modEntry.OnGUI = onGUI;
+        //    }
+        //}
 
-        public virtual Action<UnityModManager.ModEntry> OnSaveGUI
-        {
-            get => onSaveGUI;
-            set
-            {
-                onSaveGUI = value;
+        //public virtual Action<UnityModManager.ModEntry> OnSaveGUI
+        //{
+        //    get => onSaveGUI;
+        //    set
+        //    {
+        //        onSaveGUI = value;
 
-                if (modEntry is not null)
-                    modEntry.OnSaveGUI = onSaveGUI;
-            }
-        }
+        //        if (modEntry is not null)
+        //            modEntry.OnSaveGUI = onSaveGUI;
+        //    }
+        //}
     }
 
     //    static class Main
