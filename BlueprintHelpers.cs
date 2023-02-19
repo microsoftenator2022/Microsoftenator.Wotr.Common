@@ -17,126 +17,126 @@ using Kingmaker.UnitLogic.Mechanics.Components;
 using Microsoftenator.Wotr.Common.Localization;
 using Microsoftenator.Wotr.Common.Util;
 
-namespace Microsoftenator.Wotr.Common.Blueprints
-{
-    public static class Helpers
-    {
-        [Obsolete]
-        public static class Unchecked
-        {
-            public static TRef CreateBlueprintRef<TRef, T>(BlueprintGuid guid)
-                where T : BlueprintScriptableObject
-                where TRef : BlueprintReference<T>, new()
-                => new() { deserializedGuid = guid };
-        }
+//namespace Microsoftenator.Wotr.Common.Blueprints
+//{
+//    public static class Helpers
+//    {
+//        [Obsolete]
+//        public static class Unchecked
+//        {
+//            public static TRef CreateBlueprintRef<TRef, T>(BlueprintGuid guid)
+//                where T : BlueprintScriptableObject
+//                where TRef : BlueprintReference<T>, new()
+//                => new() { deserializedGuid = guid };
+//        }
 
-        [Obsolete]
-        public static TBlueprint CreateBlueprint<TBlueprint>(string name, BlueprintGuid assetId, Action<TBlueprint> init)
-            where TBlueprint : BlueprintScriptableObject, new()
-        {
-            if(ResourcesLibrary.TryGetBlueprint<TBlueprint>(assetId) is not null) throw new ArgumentException();
+//        [Obsolete]
+//        public static TBlueprint CreateBlueprint<TBlueprint>(string name, BlueprintGuid assetId, Action<TBlueprint> init)
+//            where TBlueprint : BlueprintScriptableObject, new()
+//        {
+//            if(ResourcesLibrary.TryGetBlueprint<TBlueprint>(assetId) is not null) throw new ArgumentException();
 
-            TBlueprint bp = new()
-            {
-                AssetGuid = assetId,
-                name = name
-            };
+//            TBlueprint bp = new()
+//            {
+//                AssetGuid = assetId,
+//                name = name
+//            };
 
-            init(bp);
+//            init(bp);
 
-            ResourcesLibrary.BlueprintsCache.AddCachedBlueprint(assetId, bp);
+//            ResourcesLibrary.BlueprintsCache.AddCachedBlueprint(assetId, bp);
 
-            return bp;
-        }
+//            return bp;
+//        }
 
-        [Obsolete]
-        public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid, Action<TBlueprint> init)
-            where TBlueprint : BlueprintScriptableObject, new()
-            => CreateBlueprint(name, new BlueprintGuid(guid), init);
+//        [Obsolete]
+//        public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid, Action<TBlueprint> init)
+//            where TBlueprint : BlueprintScriptableObject, new()
+//            => CreateBlueprint(name, new BlueprintGuid(guid), init);
 
-        [Obsolete]
-        public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid)
-            where TBlueprint : BlueprintScriptableObject, new()
-            => CreateBlueprint<TBlueprint>(name, guid, Functional.Ignore);
+//        [Obsolete]
+//        public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid)
+//            where TBlueprint : BlueprintScriptableObject, new()
+//            => CreateBlueprint<TBlueprint>(name, guid, Functional.Ignore);
 
-        [Obsolete]
-        public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi, Action<TBlueprint> init)
-            where TBlueprint : BlueprintScriptableObject, new()
-            => CreateBlueprint<TBlueprint>(name: bpi.Name, assetId: bpi.BlueprintGuid, init: bp => { bpi.Init(bp); init(bp); });
+//        [Obsolete]
+//        public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi, Action<TBlueprint> init)
+//            where TBlueprint : BlueprintScriptableObject, new()
+//            => CreateBlueprint<TBlueprint>(name: bpi.Name, assetId: bpi.BlueprintGuid, init: bp => { bpi.Init(bp); init(bp); });
 
-        [Obsolete]
-        public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi)
-            where TBlueprint : BlueprintScriptableObject, new()
-            => CreateBlueprint(bpi, init: Functional.Ignore);
+//        [Obsolete]
+//        public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi)
+//            where TBlueprint : BlueprintScriptableObject, new()
+//            => CreateBlueprint(bpi, init: Functional.Ignore);
 
-        //public static AddFeatureIfHasFact AddFeatureIfHasFact(BlueprintUnitFactReference checkedFact, BlueprintUnitFactReference feature, Action<AddFeatureIfHasFact> init)
-        //{
-        //    var component = new AddFeatureIfHasFact()
-        //    {
-        //        m_CheckedFact = checkedFact,
-        //        m_Feature = feature
-        //    };
+//        //public static AddFeatureIfHasFact AddFeatureIfHasFact(BlueprintUnitFactReference checkedFact, BlueprintUnitFactReference feature, Action<AddFeatureIfHasFact> init)
+//        //{
+//        //    var component = new AddFeatureIfHasFact()
+//        //    {
+//        //        m_CheckedFact = checkedFact,
+//        //        m_Feature = feature
+//        //    };
 
-        //    init(component);
+//        //    init(component);
 
-        //    return component;
-        //}
-    }
-}
+//        //    return component;
+//        //}
+//    }
+//}
 
 namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 {
     public static class BlueprintExtensions
     {
-        [Obsolete]
-        public static TBlueprint Clone<TBlueprint>(
-            this TBlueprint original,
-            string name,
-            Guid guid,
-            Action<TBlueprint> init)
-            where TBlueprint : BlueprintScriptableObject
-        {
+        //[Obsolete]
+        //public static TBlueprint Clone<TBlueprint>(
+        //    this TBlueprint original,
+        //    string name,
+        //    Guid guid,
+        //    Action<TBlueprint> init)
+        //    where TBlueprint : BlueprintScriptableObject
+        //{
 
-            TBlueprint copy = TTT_Utils.Clone(original);
+        //    TBlueprint copy = TTT_Utils.Clone(original);
 
-            copy.name = name;
-            copy.AssetGuid = new BlueprintGuid(guid);
+        //    copy.name = name;
+        //    copy.AssetGuid = new BlueprintGuid(guid);
 
-            init(copy);
+        //    init(copy);
 
-            ResourcesLibrary.BlueprintsCache.AddCachedBlueprint(copy.AssetGuid, copy);
+        //    ResourcesLibrary.BlueprintsCache.AddCachedBlueprint(copy.AssetGuid, copy);
 
-            return copy;
-        }
+        //    return copy;
+        //}
 
-        [Obsolete]
-        public static TBlueprint Clone<TBlueprint>(
-            this TBlueprint original,
-            string name,
-            string guid,
-            Action<TBlueprint> init)
-            where TBlueprint : BlueprintScriptableObject
-            => original.Clone(name, Guid.Parse(guid), init);
+        //[Obsolete]
+        //public static TBlueprint Clone<TBlueprint>(
+        //    this TBlueprint original,
+        //    string name,
+        //    string guid,
+        //    Action<TBlueprint> init)
+        //    where TBlueprint : BlueprintScriptableObject
+        //    => original.Clone(name, Guid.Parse(guid), init);
 
-        [Obsolete]
-        public static TBlueprint Clone<TBlueprint>(
-            this TBlueprint original,
-            NewBlueprint<TBlueprint> data,
-            Action<TBlueprint> init)
-            where TBlueprint : BlueprintScriptableObject, new()
-            => original.Clone(data.Name, data.Guid, init);
+        //[Obsolete]
+        //public static TBlueprint Clone<TBlueprint>(
+        //    this TBlueprint original,
+        //    NewBlueprint<TBlueprint> data,
+        //    Action<TBlueprint> init)
+        //    where TBlueprint : BlueprintScriptableObject, new()
+        //    => original.Clone(data.Name, data.Guid, init);
 
-        [Obsolete]
-        public static TBlueprint CloneFeature<TBlueprint>(
-            this TBlueprint original,
-            NewBlueprint<TBlueprint> bpi,
-            Action<TBlueprint> init)
-            where TBlueprint : BlueprintFeature, new()
-        {
-            var copy = original.Clone(bpi.Name, bpi.Guid, bp => { bpi.Init(bp); init(bp); });
+        //[Obsolete]
+        //public static TBlueprint CloneFeature<TBlueprint>(
+        //    this TBlueprint original,
+        //    NewBlueprint<TBlueprint> bpi,
+        //    Action<TBlueprint> init)
+        //    where TBlueprint : BlueprintFeature, new()
+        //{
+        //    var copy = original.Clone(bpi.Name, bpi.Guid, bp => { bpi.Init(bp); init(bp); });
 
-            return copy;
-        }
+        //    return copy;
+        //}
 
         public static void AddComponent<TComponent>(this BlueprintScriptableObject blueprint, TComponent component) where TComponent : BlueprintComponent
         {
