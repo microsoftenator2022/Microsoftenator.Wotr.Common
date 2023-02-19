@@ -7,18 +7,26 @@ using Kingmaker.Blueprints;
 using Kingmaker.Blueprints.Classes;
 using Kingmaker.Blueprints.Facts;
 using Kingmaker.Localization;
+using Kingmaker.UnitLogic.Abilities.Blueprints;
 
 using Microsoftenator.Wotr.Common.Blueprints.Extensions;
 using Microsoftenator.Wotr.Common.Localization;
 using Microsoftenator.Wotr.Common.Util;
 
-namespace Microsoftenator.Wotr.Common.Blueprints
+namespace Microsoftenator.Wotr.Common
 {
+    public interface IBlueprintInfo<out TBlueprint> where TBlueprint : SimpleBlueprint
+    {
+        BlueprintGuid BlueprintGuid { get; }
+        TBlueprint? TryGetBlueprint();
+        TBlueprint GetBlueprint();
+    }
+
     public abstract class BlueprintInfo
     {
-        public string GuidString { get; private set; }
-        internal Guid Guid => Guid.Parse(GuidString);
-        public BlueprintGuid BlueprintGuid => new(Guid);
+        public string GuidString => BlueprintGuid.ToString();
+        internal Guid Guid => BlueprintGuid.m_Guid;
+        public BlueprintGuid BlueprintGuid { get; private set; }
         internal TRef GetBlueprintRefInternal<TRef, T>()
             where T : BlueprintScriptableObject
             where TRef : BlueprintReference<T>, new()
@@ -30,9 +38,11 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public abstract string Name { get; }
         public abstract Type BlueprintType { get; }
 
-        internal BlueprintInfo(string guidString)
+        internal BlueprintInfo(string guidString) : this(BlueprintGuid.Parse(guidString)) { }
+
+        internal BlueprintInfo(BlueprintGuid guid)
         {
-            GuidString = guidString;
+            BlueprintGuid = guid;
         }
 
         public virtual bool IsEnabled { get; }
@@ -42,9 +52,12 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public virtual bool CanBeEnabled => Dependencies.All(bpi => bpi.IsEnabled);
     }
 
-    public abstract class BlueprintInfo<T> : BlueprintInfo where T : BlueprintScriptableObject
+    public abstract class BlueprintInfo<T> : BlueprintInfo, IBlueprintInfo<T> where T : BlueprintScriptableObject
     {
         internal BlueprintInfo(string guidString) : base(guidString) { }
+
+        internal BlueprintInfo(BlueprintGuid guid) : base(guid) { }
+        
         public virtual T? TryGetBlueprint() => TryGetBlueprint<T>();
         public virtual T GetBlueprint() => TryGetBlueprint() ?? throw new NullReferenceException();
 
@@ -56,12 +69,14 @@ namespace Microsoftenator.Wotr.Common.Blueprints
     {
         public virtual Action<T> Init { get; set; }
 
-        public NewBlueprint(string guid, string name) : base(guid)
+        public NewBlueprint(BlueprintGuid guid, string name) : base(guid)
         {
             this.name = name;
             Init = Functional.Ignore;
         }
 
+        public NewBlueprint(string guidString, string name) : this(BlueprintGuid.Parse(guidString), name) { }
+        
         private readonly string name;
         public override string Name => name;
 
@@ -82,11 +97,27 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         {
             if (bp is BlueprintUnitFact fact)
             {
+                fact.m_DisplayName = Helpers.Localization.LocalizedString.Empty;
+                fact.m_Description = Helpers.Localization.LocalizedString.Empty;
+                fact.m_DescriptionShort = Helpers.Localization.LocalizedString.Empty;
+
                 DisplayName = getDisplayName();
                 Description = getDescription();
 
                 if (DisplayName is not null) fact.SetDisplayName(DisplayName);
                 if (Description is not null) fact.SetDescription(Description);
+            }
+
+            if (bp is BlueprintFeature feature)
+            {
+                feature.IsClassFeature = true;
+            }
+
+            if (bp is BlueprintAbility ability)
+            {
+                ability.LocalizedDuration = Helpers.Localization.LocalizedString.Empty;
+                ability.LocalizedSavingThrow = Helpers.Localization.LocalizedString.Empty;
+                ability.MaterialComponent = new();
             }
         }
         
@@ -96,10 +127,11 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             set => base.Init = value;
         }
 
-        public NewUnitFact(string guid, string name) : base(guid, name) { }
+        public NewUnitFact(BlueprintGuid guid, string name) : base(guid, name) { }
+        public NewUnitFact(string guidString, string name) : base(BlueprintGuid.Parse(guidString), name) { }
 
         public NewUnitFact(
-            string guid,
+            BlueprintGuid guid,
             string name,
             LocalizedStringsPack strings,
             string? displayName = null,
@@ -119,11 +151,19 @@ namespace Microsoftenator.Wotr.Common.Blueprints
                 getDescription = () => strings.Get(key);
             }
         }
+
+        public NewUnitFact(
+            string guidString,
+            string name,
+            LocalizedStringsPack strings,
+            string? displayName = null,
+            string? description = null) : this(BlueprintGuid.Parse(guidString), name, strings, displayName, description) { }
     }
 
     public sealed class OwlcatBlueprint<T> : BlueprintInfo<T> where T : BlueprintScriptableObject
     {
-        public OwlcatBlueprint(string guid) : base(guid) { }
+        public OwlcatBlueprint(BlueprintGuid guid) : base(guid) { }
+        public OwlcatBlueprint(string guidString) : this(BlueprintGuid.Parse(guidString)) { }
         public override string Name => base.TryGetBlueprint<T>()?.name ?? throw new NullReferenceException();
 
         //public T GetBlueprint() => base.TryGetBlueprintInternal<T>() ?? throw new NullReferenceException();
@@ -132,17 +172,17 @@ namespace Microsoftenator.Wotr.Common.Blueprints
         public override Type BlueprintType => blueprintType;
     }
 
-    public static class BlueprintInfoExtensions
-    {
-        public static TRef GetBlueprintRef<T, U, TRef>(this BlueprintInfo<T> obj)
-            where T : U
-            where U : BlueprintScriptableObject
-            where TRef : BlueprintReference<U>, new()
-            => obj.GetBlueprintRefInternal<TRef, U>();
+    //public static class BlueprintInfoExtensions
+    //{
+    //    public static TRef GetBlueprintRef<T, U, TRef>(this BlueprintInfo<T> obj)
+    //        where T : U
+    //        where U : BlueprintScriptableObject
+    //        where TRef : BlueprintReference<U>, new()
+    //        => obj.GetBlueprintRefInternal<TRef, U>();
 
-        public static U? GetBlueprint<T, U>(this BlueprintInfo<T> obj)
-            where T : U
-            where U : BlueprintScriptableObject, new()
-            => obj.GetBlueprint();
-    }
+    //    public static U? GetBlueprint<T, U>(this BlueprintInfo<T> obj)
+    //        where T : U
+    //        where U : BlueprintScriptableObject, new()
+    //        => obj.GetBlueprint();
+    //}
 }
