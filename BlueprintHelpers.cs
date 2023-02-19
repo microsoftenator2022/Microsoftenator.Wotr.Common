@@ -14,7 +14,6 @@ using Kingmaker.Localization;
 using Kingmaker.UnitLogic;
 using Kingmaker.UnitLogic.Mechanics.Components;
 
-using Microsoftenator.Wotr.Common.Blueprints.Extensions;
 using Microsoftenator.Wotr.Common.Localization;
 using Microsoftenator.Wotr.Common.Util;
 
@@ -22,6 +21,16 @@ namespace Microsoftenator.Wotr.Common.Blueprints
 {
     public static class Helpers
     {
+        [Obsolete]
+        public static class Unchecked
+        {
+            public static TRef CreateBlueprintRef<TRef, T>(BlueprintGuid guid)
+                where T : BlueprintScriptableObject
+                where TRef : BlueprintReference<T>, new()
+                => new() { deserializedGuid = guid };
+        }
+
+        [Obsolete]
         public static TBlueprint CreateBlueprint<TBlueprint>(string name, BlueprintGuid assetId, Action<TBlueprint> init)
             where TBlueprint : BlueprintScriptableObject, new()
         {
@@ -40,18 +49,22 @@ namespace Microsoftenator.Wotr.Common.Blueprints
             return bp;
         }
 
+        [Obsolete]
         public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid, Action<TBlueprint> init)
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint(name, new BlueprintGuid(guid), init);
 
+        [Obsolete]
         public static TBlueprint CreateBlueprint<TBlueprint>(string name, Guid guid)
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint<TBlueprint>(name, guid, Functional.Ignore);
 
+        [Obsolete]
         public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi, Action<TBlueprint> init)
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint<TBlueprint>(name: bpi.Name, assetId: bpi.BlueprintGuid, init: bp => { bpi.Init(bp); init(bp); });
 
+        [Obsolete]
         public static TBlueprint CreateBlueprint<TBlueprint>(NewBlueprint<TBlueprint> bpi)
             where TBlueprint : BlueprintScriptableObject, new()
             => CreateBlueprint(bpi, init: Functional.Ignore);
@@ -75,6 +88,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 {
     public static class BlueprintExtensions
     {
+        [Obsolete]
         public static TBlueprint Clone<TBlueprint>(
             this TBlueprint original,
             string name,
@@ -95,6 +109,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
             return copy;
         }
 
+        [Obsolete]
         public static TBlueprint Clone<TBlueprint>(
             this TBlueprint original,
             string name,
@@ -103,6 +118,7 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
             where TBlueprint : BlueprintScriptableObject
             => original.Clone(name, Guid.Parse(guid), init);
 
+        [Obsolete]
         public static TBlueprint Clone<TBlueprint>(
             this TBlueprint original,
             NewBlueprint<TBlueprint> data,
@@ -110,13 +126,14 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
             where TBlueprint : BlueprintScriptableObject, new()
             => original.Clone(data.Name, data.Guid, init);
 
+        [Obsolete]
         public static TBlueprint CloneFeature<TBlueprint>(
             this TBlueprint original,
             NewBlueprint<TBlueprint> bpi,
             Action<TBlueprint> init)
             where TBlueprint : BlueprintFeature, new()
         {
-            var copy = original.Clone(bpi.Name, bpi.Guid, bp => { bpi.Init(bp); init(bp); } );
+            var copy = original.Clone(bpi.Name, bpi.Guid, bp => { bpi.Init(bp); init(bp); });
 
             return copy;
         }
@@ -304,6 +321,13 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
         }
 
         public static LocalizedString GetDescription(this BlueprintUnitFact bp) => bp.m_Description;
+
+        public static void CopyStringsFrom(this BlueprintUnitFact fact, BlueprintUnitFact other)
+        {
+            fact.m_DisplayName = other.m_DisplayName;
+            fact.m_Description = other.m_DisplayName;
+            fact.m_DescriptionShort = other.m_DescriptionShort;
+        }
     }
 
     public static class BlueprintCharacterClassExtensions
@@ -321,6 +345,30 @@ namespace Microsoftenator.Wotr.Common.Blueprints.Extensions
 
             feat.AddComponent(p);
         }
+
+        public static void SetDisplayName(this BlueprintCharacterClass bp, LocalizedString? displayName)
+            => bp.LocalizedName = displayName;
+        
+        public static void SetDisplayName(this BlueprintCharacterClass bp, LocalizedStringsPack strings, string text)
+        {
+            var key = $"{bp.name}.Name";
+            strings.Add(key, text);
+            bp.SetDisplayName(strings.Get(key));
+        }
+
+        public static LocalizedString GetDisplayName(this BlueprintCharacterClass bp) => bp.LocalizedName;
+
+        public static void SetDescription(this BlueprintCharacterClass bp, LocalizedString? description)
+            => bp.LocalizedDescription = description;
+
+        public static void SetDescription(this BlueprintCharacterClass bp, LocalizedStringsPack strings, string text)
+        {
+            var key = $"{bp.name}.Description";
+            strings.Add(key, text);
+            bp.SetDescription(strings.Get(key));
+        }
+
+        public static LocalizedString GetDescription(this BlueprintCharacterClass bp) => bp.LocalizedDescription;
     }
 
     //public static class ContextRankConfigExtensions

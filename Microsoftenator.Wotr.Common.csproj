@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>1.2.0</VersionPrefix>
+    <VersionPrefix>1.9.11</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -42,6 +42,10 @@
     </Reference>
     <Reference Include="Owlcat.Runtime.Validation">
       <HintPath>$(WrathPath)\Wrath_Data\Managed\Owlcat.Runtime.Validation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Owlcat.SharedTypes">
+      <HintPath>$(WrathPath)\Wrath_Data\Managed\Owlcat.SharedTypes.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
